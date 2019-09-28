@@ -1,0 +1,12 @@
+cluster.name: linux
+node.name: node1
+path.data: /esdata/data
+path.logs: /esdata/logs
+network.host: "192.168.10.5"
+http.port: 9200
+discovery.seed_hosts: ["192.168.10.5"]
+cluster.initial_master_nodes: ["192.168.10.5"]
+#xpack.monitoring.enabled: true
+#bootstrap.memory_lock: true
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
