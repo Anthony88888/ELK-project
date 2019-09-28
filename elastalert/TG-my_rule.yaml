@@ -1,0 +1,26 @@
+es_host: 192.168.10.5
+es_port: 9200
+es_username: "elastic"
+es_password: "777777"
+name: Example frequency rule
+type: frequency
+index: logstash-nginx-accesslog*
+num_events: 4
+timeframe:
+  minutes: 1
+filter:
+- regexp:
+    message: "404"
+#smtp_host: "smtp.163.com"
+#smtp_port: 25
+#smtp_auth_file: "/root/elastalert/example_rules/smtp_auth_file.yaml"
+#email_reply_to: "devops8@163.com"
+#from_addr: "devops8@163.com"
+alert:
+- "telegram"
+#email:
+#- "devops8@163.com"
+#- "2013400162@qq.com"
+
+telegram_bot_token: 982436847:AAF1TF0_hPoQR0IvDSUVqY4xFUAqiK4-QIw
+telegram_room_id: "-347952412"
