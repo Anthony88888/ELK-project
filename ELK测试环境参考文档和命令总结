@@ -1,0 +1,153 @@
+#elasticsearch   设置安装密码的方法 
+https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-security.html   附官方文档
+
+
+#在Linux里执行设置密码的操作
+[root@node1 elasticsearch]# bin/elasticsearch-setup-passwords interactive
+Initiating the setup of passwords for reserved users elastic,apm_system,kibana,logstash_system,beats_system,remote_monitoring_user.
+You will be prompted to enter passwords as the process progresses.
+Please confirm that you would like to continue [y/N]y
+
+Enter password for [elastic]: 
+Reenter password for [elastic]: 
+Enter password for [apm_system]: 
+Reenter password for [apm_system]: 
+Enter password for [kibana]: 
+Reenter password for [kibana]: 
+Enter password for [logstash_system]: 
+Reenter password for [logstash_system]: 
+Enter password for [beats_system]: 
+Reenter password for [beats_system]: 
+Enter password for [remote_monitoring_user]: 
+Reenter password for [remote_monitoring_user]: 
+Changed password for user [apm_system]
+Changed password for user [kibana]
+Changed password for user [logstash_system]
+Changed password for user [beats_system]
+Changed password for user [remote_monitoring_user]
+Changed password for user [elastic]
+
+
+#Packetbeat 的相关命令行操作
+
+packetbeat setup -e \
+  -E output.logstash.enabled=false \
+  -E output.elasticsearch.hosts=['192.168.10.5:9200'] \
+  -E output.elasticsearch.username=elastic \
+  -E output.elasticsearch.password=777777 \
+  -E setup.kibana.host=192.168.10.6:5601
+  
+  
+  GET _cat/shards?h=index,shard,prirep,state,unassigned.reason
+  
+  packetbeat setup --template -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["192.168.10.5:9200"]'
+
+  curl -XDELETE 'http://192.168.10.5:9200/packetbeat-*'
+
+
+
+  
+  java -javaagent:/usr/local/src/elastic-apm-agent-1.9.0.jar \
+     -Delastic.apm.service_name=my-application \
+     -Delastic.apm.server_url=http://localhost:8200 \
+     -Delastic.apm.secret_token= \
+     -Delastic.apm.application_packages=org.example \
+     -jar elastic-apm-agent-1.9.0.jar
+	 
+	 [root@L7 src]# curl -XDELETE 'http://192.168.10.5:9200/packetbeat-*' -u elastic:777777      要想删除之前的索引如何elasticsearch设置密码的话必须加的-u的参数
+	 
+	 curl -XPUT -H 'Content-Type: application/json' http://192.168.10.5:9200/_template/packetbeat-7.0.1 -d@packetbeat.template.json -u elastic:777777
+	 
+	 
+	 
+	 curl -XPUT 'http://192.168.10.5:9200/_template/topbeat' -d@/etc/topbeat/topbeat.template.json   -u elastic:777777
+	 
+	 
+	 
+#参考的相关文档汇总:
+ES:
+https://github.com/elastic/elasticsearch
+
+https://github.com/amix/vimrc
+https://github.com/eternnoir/pyTelegramBotAPI
+https://github.com/python-telegram-bot/python-telegram-bot
+https://gist.github.com/soulsearcher/30d3c2ea3c89e53b01e87b83b8ebe91b/revisions
+https://github.com/dzharii/awesome-elasticsearch
+https://alexandreesl.com/2016/04/15/elastalert-implementing-rich-monitoring-with-elasticsearch/
+https://github.com/bitsensor/elastalert-kibana-plugin
+https://www.ipyker.com/2019/03/13/elastic-x-pack
+
+
+#elastalert的相关的命令总结
+
+https://www.alongparty.cn/elastalert-monitoring-log-alarm.html    文档elastalert
+https://blog.xizhibei.me/2017/11/19/alerting-with-elastalert/
+/usr/bin/python -m elastalert.elastalert --config /root/elastalert/config.yaml --rule /root/elastalert/example_rules/my_rule.yaml   #启动监控elastalert服务的命令.
+
+
+#报警相关的内容
+alert_subject: "web attack may be by {} at @{}"
+alert_subject_args:
+  - remote_addr
+  - time
+alert_text_type: alert_text_only
+alert_text: |
+  你好，服务器({})可能正在受到 web 攻击，请采取手段阻止！！！！
+  ### 截止发邮件前匹配到的请求数：{}
+  > 发生时间: {}
+  > timestamp:{}
+  > attacker's ip: {}
+  > request: {}
+  > status:{}
+  > UA 头:{}
+  >>> 参考来源：{}
+alert_text_args:
+  - host
+  - num_hits
+  - time
+  - "@timestamp"
+  - remote_addr
+  - request
+  - status
+  - http_user_agent
+  - source
+  
+    
+# (Required)
+#这里使用的是ES 的DSL语句做过滤条件
+filter:
+#逻辑组合
+- bool:
+    #必须存在
+    must:
+      - match:
+          level: "ERROR"
+    #必须不存在，即过滤掉的
+    must_not:
+      - match:
+          stackTrace: "org.apache.catalina.connector.ClientAbortException: java.io.IOException: Broken pipe"
+      - match:    
+          message: "[SUCCESS]"
+		  
+
+#使用TG报警的相关内容验证.
+https://api.telegram.org/bot982436847:AAF1TF0_hPoQR0IvDSUVqY4xFUAqiK4-QIw/getMe
+https://api.telegram.org/bot982436847:AAF1TF0_hPoQR0IvDSUVqY4xFUAqiK4-QIw/getUpdates
+		  		  		  
+982436847:AAF1TF0_hPoQR0IvDSUVqY4xFUAqiK4-QIw
+-347952412
+		  
+
+
+#java编译成class类的命令
+java的反编译器Luyten.
+[root@node1 mnt]# javac -cp "/usr/share/elasticsearch/lib/elasticsearch-7.0.1.jar:/usr/share/elasticsearch/lib/lucene-core-8.0.0.jar:/usr/share/elasticsearch/modules/x-pack-core/x-pack-core-7.0.1.jar:/usr/share/elasticsearch/modules/x-pack-core/netty-common-4.1.32.Final.jar:/usr/share/elasticsearch/lib/elasticsearch-core-7.0.1.jar" /mnt/LicenseVerifier.java
+[root@node1 mnt]# javac -cp "/usr/share/elasticsearch/lib/elasticsearch-7.0.1.jar:/usr/share/elasticsearch/lib/lucene-core-8.0.0.jar:/usr/share/elasticsearch/modules/x-pack-core/x-pack-core-7.0.1.jar:/usr/share/elasticsearch/modules/x-pack-core/netty-common-4.1.32.Final.jar:/usr/share/elasticsearch/lib/elasticsearch-core-7.0.1.jar" /mnt/XPackBuild.java
+
+[root@node1 ~]# curl -XPUT -u elastic:777777 'http://192.168.10.5:9200/_xpack/license' -H "Content-Type: application/json" -d @license.json
+
+		  
+		  
+		  
+		  
+		  
